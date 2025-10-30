@@ -1,0 +1,43 @@
+---
+import BlogLayout from "../../../layouts/BlogLayout.astro";
+import { getCollection } from "astro:content";
+
+const slugify = (s) =>
+  s.toString()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+
+const posts = await getCollection("blog");
+const categories = Array.from(new Set(posts.map(p => p.data.category).filter(Boolean)))
+  .map(label => ({
+    label,
+    slug: slugify(label),
+    count: posts.filter(p => p.data.category && slugify(p.data.category) === slugify(label)).length
+  }));
+---
+<BlogLayout title="Catégories – Analeute" description="Toutes les catégories du blog.">
+  <nav class="breadcrumb" aria-label="Fil d’Ariane" style="max-width:700px;margin:1rem auto;padding:0 2rem;">
+    <a href="/">← Accueil</a><span class="sep">›</span>
+    <a href="/blog/">Blog</a><span class="sep">›</span>
+    <span class="current">Catégories</span>
+  </nav>
+  <main style="max-width:700px;margin:2rem auto;padding:0 2rem;">
+    <h1>Catégories</h1>
+    {categories.length === 0 ? (
+      <p>Aucune catégorie pour l’instant.</p>
+    ) : (
+      <ul style="list-style:none;padding:0;margin:1rem 0;">
+        {categories.map(c => (
+          <li style="padding:.5rem 0;">
+            <a href={`/blog/categorie/${c.slug}/`} style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.3);">
+              {c.label}
+            </a>
+            <span style="opacity:.6"> ({c.count})</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</BlogLayout>

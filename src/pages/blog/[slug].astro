@@ -1,0 +1,86 @@
+---
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import { getCollection } from "astro:content";
+
+/* utilitaire: accents/espaces → tirets (slug) */
+const slugify = (s) =>
+  s
+    .toString()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+
+/* génère toutes les routes d’articles depuis la collection "blog" */
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { data } = post;
+const { Content } = await post.render();
+
+/* slug de catégorie pour l’URL */
+const catSlug = data.category ? slugify(data.category) : "";
+---
+<BlogLayout title={`${data.title} – Analeute`} description={data.description}>
+  <!-- Fil d’Ariane -->
+  <nav class="breadcrumb" aria-label="Fil d’Ariane" style="max-width:700px;margin:1rem auto;padding:0 2rem;">
+    <a href="/">← Accueil</a>
+    <span class="sep">›</span>
+    <a href="/blog/">Blog</a>
+    <span class="sep">›</span>
+    <span class="current">{data.title}</span>
+  </nav>
+
+  <article style="max-width:700px;margin:2.5rem auto;padding:0 2rem;">
+    <h1>{data.title}</h1>
+
+    <!-- Métadonnées (date, catégorie, tags) -->
+    <p class="meta" style="opacity:.65;font-size:.95rem;margin:.3rem 0 1rem;">
+      Publié le <time datetime={data.pubDate}>{data.pubDate}</time>
+      {data.category && (
+        <>
+          {" · "}Catégorie :
+          {" "}
+          <a
+            href={`/blog/categorie/${catSlug}/`}
+            style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.3);"
+          >
+            {data.category}
+          </a>
+        </>
+      )}
+      {data.tags && data.tags.length > 0 && (
+        <>
+          {" · "}Mots-clés :
+          {data.tags.map((t, i) => (
+            <>
+              {" "}
+              <a
+                href={`/blog/tag/${slugify(t)}/`}
+                style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.3);"
+              >
+                {t}
+              </a>
+              {i < data.tags.length - 1 ? "," : ""}
+            </>
+          ))}
+        </>
+      )}
+    </p>
+
+    <!-- Contenu Markdown -->
+    <div class="content">
+      <Content />
+    </div>
+
+    <p style="margin-top:1.4rem;">
+      ← Retour au <a href="/blog/" style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.4);">Blog</a>
+    </p>
+  </article>
+</BlogLayout>

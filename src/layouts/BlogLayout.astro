@@ -1,0 +1,81 @@
+---
+const { title = "Blog – Analeute", description = "" } = Astro.props;
+const year = new Date().getFullYear();
+---
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favanaleute.png" type="image/png" />
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      .site-header { background: transparent; box-shadow: 0 2px 4px rgba(0,0,0,.05); }
+      main { max-width:700px; margin:2.5rem auto; padding:0 2rem; }
+      .postlist { list-style:none; padding:0; margin:1rem 0; }
+      .postlist li { padding:1rem 0; border-bottom:1px dashed rgba(0,0,0,.12); }
+      .postlist li:last-child { border-bottom:0; }
+      .postlist a { font-weight:700; color:#4fa4c7; text-decoration:none; border-bottom:1px solid rgba(79,164,199,.4); }
+      .postlist a:hover { border-color: rgba(79,164,199,.8); }
+      .meta { opacity:.65; font-size:.95rem; margin-top:.25rem; }
+      article .meta { margin:.3rem 0 1rem; }
+      article p { line-height:1.8; }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="bar">
+        <nav class="mainnav" aria-label="Navigation principale">
+          <ul>
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/analyse">Analyse</a></li>
+            <li><a href="/outils">Outils</a></li>
+            <li><a href="/temoignages">Témoignages</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </nav>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer">Menu</button>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer" role="contentinfo">
+      <div class="wrap">
+        <div class="grid">
+          <div>
+            <span class="brandfoot">Analeute</span>
+            <span class="tagline">Je décrypte les histoires que votre corps murmure.</span>
+          </div>
+          <nav aria-label="Liens de pied de page">
+            <ul class="footnav">
+              <li><a href="/">Accueil</a></li>
+              <li><a href="/analyse">Analyse</a></li>
+              <li><a href="/outils">Outils</a></li>
+              <li><a href="/temoignages">Témoignages</a></li>
+              <li><a href="/blog">Blog</a></li>
+            </ul>
+          </nav>
+          <div class="contact">
+            <a href="mailto:analeute@proton.me">analeute@proton.me</a>
+            <span class="muted">Profession non reconnue. Démarche exploratoire non médicale.</span>
+          </div>
+        </div>
+        <div class="smallprint">© {year} Analeute — Tous droits réservés.</div>
+      </div>
+    </footer>
+
+    <nav id="mobile-drawer" class="drawer" aria-label="Navigation mobile">
+      <ul>
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/analyse">Analyse</a></li>
+        <li><a href="/outils">Outils</a></li>
+        <li><a href="/temoignages">Témoignages</a></li>
+        <li><a href="/blog">Blog</a></li>
+      </ul>
+    </nav>
+    <script src="/assets/js/menu.js" is:inline></script>
+  </body>
+</html>

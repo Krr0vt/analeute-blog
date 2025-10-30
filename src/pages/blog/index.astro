@@ -1,0 +1,77 @@
+---
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import { getCollection } from "astro:content";
+
+/* utilitaire: accents/espaces → tirets (slug) */
+const slugify = (s) =>
+  s
+    .toString()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+
+/* récupère tous les posts et trie par date décroissante */
+const posts = await getCollection("blog");
+const sorted = posts.sort((a, b) => (a.data.pubDate > b.data.pubDate ? -1 : 1));
+---
+
+<BlogLayout title="Blog – Analeute" description="Actualités et notes analeutiques : résonances, lectures, outils.">
+  <!-- Fil d’Ariane -->
+  <nav class="breadcrumb" aria-label="Fil d’Ariane" style="max-width:700px;margin:1rem auto;padding:0 2rem;">
+    <a href="/">← Accueil</a><span class="sep">›</span><span class="current">Blog</span>
+  </nav>
+
+  <main style="max-width:700px;margin:2rem auto;padding:0 2rem;">
+    <h1>Blog</h1>
+    <p>Notes sobres, lectures, résonances et outils — au fil de l’exploration analeutique.</p>
+
+    <ul class="postlist" style="list-style:none;padding:0;margin:1rem 0;">
+      {sorted.map(({ slug, data }) => (
+        <li style="padding:1rem 0;border-bottom:1px dashed rgba(0,0,0,.12);">
+          <a
+            href={`/blog/${slug}/`}
+            style="font-weight:700;color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.4);"
+          >
+            {data.title}
+          </a>
+
+          <div class="meta" style="opacity:.65;font-size:.95rem;margin-top:.25rem;">
+            Publié le <time datetime={data.pubDate}>{data.pubDate}</time>
+            {data.category && (
+              <>
+                {" · "}Catégorie :{" "}
+                <a
+                  href={`/blog/categorie/${slugify(data.category)}/`}
+                  style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.3);"
+                >
+                  {data.category}
+                </a>
+              </>
+            )}
+          </div>
+
+          <p class="excerpt" style="margin:.4rem 0 0;opacity:.9;">{data.description}</p>
+
+          {data.tags && data.tags.length > 0 && (
+            <p style="font-size:.9rem;opacity:.7;margin-top:.3rem;">
+              Mots-clés :
+              {data.tags.map((t, i) => (
+                <>
+                  {" "}
+                  <a
+                    href={`/blog/tag/${slugify(t)}/`}
+                    style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.3);"
+                  >
+                    {t}
+                  </a>
+                  {i < data.tags.length - 1 ? "," : ""}
+                </>
+              ))}
+            </p>
+          )}
+        </li>
+      ))}
+    </ul>
+  </main>
+</BlogLayout>

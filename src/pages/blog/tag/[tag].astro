@@ -1,0 +1,66 @@
+---
+import BlogLayout from "../../../layouts/BlogLayout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  // utilitaire local (accents/espaces → tirets)
+  const slugify = (s) =>
+    s
+      .toString()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
+  const posts = await getCollection("blog");
+
+  // liste de tous les tags uniques
+  const allTags = posts.flatMap((p) => p.data.tags ?? []);
+  const unique = Array.from(new Set(allTags));
+
+  // pour chaque tag, on calcule son slug et on sélectionne les posts correspondants
+  return unique.map((label) => {
+    const tagSlug = slugify(label);
+    const tagged = posts.filter((p) =>
+      (p.data.tags ?? []).some((t) => slugify(t) === tagSlug)
+    );
+    return {
+      params: { tag: tagSlug },
+      props: { label, posts: tagged },
+    };
+  });
+}
+
+// props injectées par getStaticPaths
+const { label, posts } = Astro.props;
+---
+<BlogLayout title={`Tag : ${label} – Analeute`} description={`Articles tagués « ${label} »`}>
+  <nav class="breadcrumb" aria-label="Fil d’Ariane" style="max-width:700px;margin:1rem auto;padding:0 2rem;">
+    <a href="/">← Accueil</a><span class="sep">›</span>
+    <a href="/blog/">Blog</a><span class="sep">›</span>
+    <span class="current">Tag : {label}</span>
+  </nav>
+
+  <main style="max-width:700px;margin:2rem auto;padding:0 2rem;">
+    <h1>Tag : {label}</h1>
+    <ul style="list-style:none;padding:0;margin:1rem 0;">
+      {posts.map(({ slug, data }) => (
+        <li style="padding:1rem 0;border-bottom:1px dashed rgba(0,0,0,.12);">
+          <a href={`/blog/${slug}/`} style="font-weight:700;color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.4);">{data.title}</a>
+          <div class="meta" style="opacity:.65;font-size:.95rem;margin-top:.25rem;">
+            Publié le <time datetime={data.pubDate}>{data.pubDate}</time>
+            {data.category && (
+              <>
+                {" · "}Catégorie :{" "}
+                <a href={`/blog/categorie/${data.category}/`} style="color:#4fa4c7;text-decoration:none;border-bottom:1px solid rgba(79,164,199,.3);">
+                  {data.category}
+                </a>
+              </>
+            )}
+          </div>
+          <p class="excerpt" style="margin:.4rem 0 0;opacity:.9;">{data.description}</p>
+        </li>
+      ))}
+    </ul>
+  </main>
+</BlogLayout>
